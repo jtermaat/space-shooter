@@ -91,9 +91,59 @@ function makeShip() {
                 var bullet = makeBullet(this.x, this.y, shootXV, shootYV);
                 this.bullets.push(bullet);
             }
+        },
+        willCollideWith: function(barrier) {
+            var distMidToNose = 10;
+            var distMidToRight = 5;
+            var distMidToLeft = 5;
+            var frontTipX = this.x + distMidToNose * Math.cos(this.direction);
+            var frontTipX2 = frontTipX + this.xV;
+            var frontTipY = this.y + distMidToNose * Math.sin(this.direction);
+            var frontTipY2 = frontTipY + this.yV;
+            var rightBackX = this.x + distMidToRight * Math.cos(this.direction + degreesToRadians(120));
+            var rightBackX2 = rightBackX + this.xV;
+            var rightBackY = this.y + distMidToRight * Math.sin(this.direction + degreesToRadians(120));
+            var rightBackY2 = rightBackY + this.yV;
+            var leftBackX = this.x + distMidToLeft * Math.cos(this.direction + degreesToRadians(240));
+            var leftBackX2 = leftBackX + xV;
+            var leftBackY = this.y + distMidToLeft * Math.sin(this.direction + degreesToRadians(240));
+            var leftBackY2 = leftBackY + yV;
+            var collision = false;
+            if (linesIntersect(frontTipX, frontTipY, frontTipX2, frontTipY2, barrier.x1, barrier.y1, barrier.x2, barrier.y2)) {
+                collision = true;
+            }
+            if (linesIntersect(rightBackX, rightBackY, rightBackX2, rightBackY2, barrier.x1, barrier.y1, barrier.x2, barrier.y2)) {
+                collision = true;
+            }
+            if (linesIntersect(leftBackX, leftBackY, leftBackX2, leftBackY2, barrier.x1, barrier.y1, barrier.x2, barrier.y2)) {
+                collision = true;
+            }
+            return collision;
+        },
+        bounceOff: function(barrier) {
+
         }
     }
     return ship;
+}
+
+function linesIntersect(ax1, ay1, ax2, ay2, bx1, by1, bx2, by2) {
+    var am = (ay2 - ay1) / (ax2 - ax1);
+    var ab = ay1 - (am * ax1);
+    var bm = (by2 - by1) / (bx2 - bx1);
+    var bb = by1 - (bm * bx1);
+    if (am - bm == 0) {
+        return false;
+    }
+    var intersectX = (bb - ab) / (am - bm);
+    var intersectY = (am * intersectX) + ab;
+    if ((intersectX <= ax1 && intersectX >= ax2 || intersectX >= ax1 && intersectX <= ax2) &&
+        (intersectX <= bx1 && intersectX >= bx2 || intersectX >= bx1 && intersectX <= bx2) &&
+        (intersectY <= ay1 && intersectY >= ay2 || intersectY >= ay1 && intersectY <= ay2) &&
+        (intersectY <= by1 && intersectY >= by2 || intersectY >= by1 && intersectY <= by2)) {
+        return true;
+    }
+    return false;
 }
 
 function makeBullet(x, y, xV, yV) {
@@ -314,6 +364,10 @@ function addBarriersToProcessingSections(barriers) {
             }
         });
     });
+}
+
+function checkForCollisions(barriers, ship) {
+
 }
 
 
