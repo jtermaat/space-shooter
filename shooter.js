@@ -105,9 +105,9 @@ function makeShip() {
             var rightBackY = this.y + distMidToRight * Math.sin(this.direction + degreesToRadians(120));
             var rightBackY2 = rightBackY + this.yV;
             var leftBackX = this.x + distMidToLeft * Math.cos(this.direction + degreesToRadians(240));
-            var leftBackX2 = leftBackX + xV;
+            var leftBackX2 = leftBackX + this.xV;
             var leftBackY = this.y + distMidToLeft * Math.sin(this.direction + degreesToRadians(240));
-            var leftBackY2 = leftBackY + yV;
+            var leftBackY2 = leftBackY + this.yV;
             var collision = false;
             if (linesIntersect(frontTipX, frontTipY, frontTipX2, frontTipY2, barrier.x1, barrier.y1, barrier.x2, barrier.y2)) {
                 collision = true;
@@ -189,8 +189,8 @@ function clearScreen() {
 
 function getBarriers() {
     var barriers = [];
-    b1 = {x1:300, y1:100, x2:300, y2: 500};
-    b2 = {x1:600, y1:100, x2:600, y2: 500};
+    b1 = {x1:300, y1:100, x2:350, y2: 500};
+    b2 = {x1:600, y1:100, x2:650, y2: 500};
     barriers.push(b1);
     barriers.push(b2);
     return barriers;
@@ -304,7 +304,7 @@ function addShipToProcessingSections(ship) {
     addBulletsToProcessingSections(ship.bullets);
     ship.processingSections = [];
     processingSections.forEach(function (section) {
-        if (ship.x >= section.left && ship.x < section.right && ship.y >= section.top && person.y < section.bottom) {
+        if (ship.x >= section.left && ship.x < section.right && ship.y >= section.top && ship.y < section.bottom) {
             section.ships.push(ship);
             ship.processingSections.push(section);
         }
@@ -313,13 +313,13 @@ function addShipToProcessingSections(ship) {
 
 function addBulletsToProcessingSections(bullets) {
     bullets.forEach(function(bullet) {
-       bullet.processingSections = [];
-       processingSections.forEach(function (section) {
-           if (bullet.x >= section.left && bullet.x < section.right && bullet.y >= section.top && person.y < section.bottom) {
-               section.bullets.push(bullet);
-               bullet.processingSections.push(section);
-           }
-       });
+        bullet.processingSections = [];
+        processingSections.forEach(function (section) {
+            if (bullet.x >= section.left && bullet.x < section.right && bullet.y >= section.top && ship.y < section.bottom) {
+                section.bullets.push(bullet);
+                bullet.processingSections.push(section);
+            }
+        });
     });
 }
 
@@ -345,11 +345,11 @@ function addBarriersToProcessingSections(barriers) {
                 var m = (barrier.y2 - barrier.y1) / (barrier.x2 - barrier.x1);
                 var b = barrier.y1 - (m * barrier.x1);
                 var xCheck = (section.top - b) / m;
-                if (xCheck <= right && xCheck >= left) {
+                if (xCheck <= section.right && xCheck >= section.left) {
                     match = true;
                 }
                 xCheck = (section.bottom - b) / m;
-                if (xCheck <= right && xCheck >= left) {
+                if (xCheck <= section.right && xCheck >= section.left) {
                     match = true;
                 }
                 var yCheck = (m * section.left) + b;
@@ -373,11 +373,11 @@ function checkForCollisions(barriers, ship) {
     var shipSections = ship.processingSections;
     var allLocalBarriers = [];
     shipSections.forEach(function(section) {
-        allLocalBarriers.push(section.barriers);
+        allLocalBarriers.push.apply(allLocalBarriers, section.barriers);
     });
     var collides = false;
     allLocalBarriers.forEach(function(barrier) {
-         collides = collides || ship.collides(barrier);
+        collides = collides || ship.collides(barrier);
     });
 
     if (collides) {
