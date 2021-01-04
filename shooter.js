@@ -92,7 +92,7 @@ function makeShip() {
                 this.bullets.push(bullet);
             }
         },
-        willCollideWith: function(barrier) {
+        collides: function(barrier) {
             var distMidToNose = 10;
             var distMidToRight = 5;
             var distMidToLeft = 5;
@@ -242,8 +242,11 @@ function begin() {
             // shoot gun
         }
     });
+    createProcessingSections();
     window.setInterval(() => {
         ship.nextFrame();
+        configureProcessingSections(ship, barriers);
+        checkForCollisions(barriers, ship);
         clearScreen();
         drawBarriers(barriers);
         ship.draw();
@@ -367,7 +370,20 @@ function addBarriersToProcessingSections(barriers) {
 }
 
 function checkForCollisions(barriers, ship) {
+    var shipSections = ship.processingSections;
+    var allLocalBarriers = [];
+    shipSections.forEach(function(section) {
+        allLocalBarriers.push(section.barriers);
+    });
+    var collides = false;
+    allLocalBarriers.forEach(function(barrier) {
+         collides = collides || ship.collides(barrier);
+    });
 
+    if (collides) {
+        ship.xV = 0;
+        ship.yV = 0;
+    }
 }
 
 
