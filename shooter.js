@@ -121,7 +121,14 @@ function makeShip() {
             return collision;
         },
         bounceOff: function(barrier) {
-
+            var barrierAngle = Math.atan2(barrier.y2-barrier.y1, barrier.x2-barrier.x1);
+            var velocityAngle = Math.atan2(this.yV, this.xV);
+            var velocityMagnitude = Math.sqrt(Math.pow(this.xV, 2) + Math.pow(this.yV, 2));
+            var contactAngle = barrierAngle - velocityAngle;
+            console.log('Adding to direction: ' + contactAngle * 2);
+            var newVelocityAngle = velocityAngle + (contactAngle * 2);
+            this.xV = velocityMagnitude * Math.cos(newVelocityAngle);
+            this.yV = velocityMagnitude * Math.sin(newVelocityAngle);
         }
     }
     return ship;
@@ -188,11 +195,13 @@ function clearScreen() {
 }
 
 function getBarriers() {
-    var barriers = [];
-    b1 = {x1:300, y1:100, x2:350, y2: 500};
-    b2 = {x1:600, y1:100, x2:650, y2: 500};
-    barriers.push(b1);
-    barriers.push(b2);
+    var barriers = [
+        {x1:50, y1:10, x2:80, y2: 500},
+        {x1:800, y1:10, x2:1050, y2: 500},
+        {x1:20, y1:20, x2: 1000, y2:50},
+        {x1:20, y1:420, x2: 1300, y2:480}
+    ];
+
     return barriers;
 }
 
@@ -220,6 +229,7 @@ function begin() {
     var barriers = getBarriers();
     var canvas = document.getElementById("canvas");
     document.addEventListener("keydown", (event) => {
+        event.preventDefault();
         if (event.keyCode == 37) { // Left arrow key
             ship.turningLeft = true;
         } else if (event.keyCode == 38) { // up arrow key
@@ -232,6 +242,7 @@ function begin() {
     });
 
     document.addEventListener("keyup", (event) => {
+        event.preventDefault();
         if (event.keyCode == 37) { // Left arrow key
             ship.turningLeft = false;
         } else if (event.keyCode == 38) { // up arrow key
@@ -315,7 +326,7 @@ function addBulletsToProcessingSections(bullets) {
     bullets.forEach(function(bullet) {
         bullet.processingSections = [];
         processingSections.forEach(function (section) {
-            if (bullet.x >= section.left && bullet.x < section.right && bullet.y >= section.top && ship.y < section.bottom) {
+            if (bullet.x >= section.left && bullet.x < section.right && bullet.y >= section.top && bullet.y < section.bottom) {
                 section.bullets.push(bullet);
                 bullet.processingSections.push(section);
             }
@@ -375,19 +386,17 @@ function checkForCollisions(barriers, ship) {
     shipSections.forEach(function(section) {
         allLocalBarriers.push.apply(allLocalBarriers, section.barriers);
     });
-    var collides = false;
     allLocalBarriers.forEach(function(barrier) {
-        collides = collides || ship.collides(barrier);
+        if (ship.collides(barrier)) {
+            ship.bounceOff(barrier);
+        }
     });
-
-    if (collides) {
-        ship.xV = 0;
-        ship.yV = 0;
-    }
 }
 
 
 begin();
+
+
 
 
 
